@@ -41,11 +41,13 @@ final readonly class PlayableActivity
      *     title: string,
      *     instructions: string,
      *     learning_objective: string,
-     *     items: list<array{id: string, prompt: string, options: list<array{id: string, text: string}>}>
+     *     items: list<array{id: string, prompt: string, image_url: ?string, image_alt_text: ?string, options: list<array{id: string, text: string}>}>
      * }
      */
     public function toPublicArray(): array
     {
+        $media = collect($this->payload['media'])->keyBy('id')->all();
+
         return [
             'public_id' => $this->publicId,
             'student_name' => (string) $this->payload['student']['name'],
@@ -53,17 +55,7 @@ final readonly class PlayableActivity
             'instructions' => (string) $this->payload['instructions'],
             'learning_objective' => (string) $this->payload['learning_objective'],
             'items' => array_map(
-                static fn (array $item): array => [
-                    'id' => (string) $item['id'],
-                    'prompt' => (string) $item['data']['prompt']['text'],
-                    'options' => array_map(
-                        static fn (array $option): array => [
-                            'id' => (string) $option['id'],
-                            'text' => (string) $option['content']['text'],
-                        ],
-                        $item['data']['options'],
-                    ),
-                ],
+                fn (array $item): array => $this->publicItem($item, $media),
                 $this->payload['items'],
             ),
         ];
@@ -104,6 +96,33 @@ final readonly class PlayableActivity
         }
 
         return true;
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     * @param  array<string, array<string, mixed>>  $media
+     * @return array<string, mixed>
+     */
+    private function publicItem(array $item, array $media): array
+    {
+        $mediaId = $item['data']['illustration_media_id'] ?? null;
+        $illustration = is_string($mediaId) ? ($media[$mediaId] ?? null) : null;
+
+        return [
+            'id' => (string) $item['id'],
+            'prompt' => (string) $item['data']['prompt']['text'],
+            'image_url' => is_array($illustration)
+                ? route('activities.media.show', [$this->publicId, $mediaId], absolute: false)
+                : null,
+            'image_alt_text' => is_array($illustration) ? (string) $illustration['alt_text'] : null,
+            'options' => array_map(
+                static fn (array $option): array => [
+                    'id' => (string) $option['id'],
+                    'text' => (string) $option['content']['text'],
+                ],
+                $item['data']['options'],
+            ),
+        ];
     }
 
     private static function notFound(): never

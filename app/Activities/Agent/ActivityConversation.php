@@ -12,7 +12,10 @@ final readonly class ActivityConversation
 {
     private const int MAX_MESSAGES = 20;
 
-    public function __construct(private ActivityAgent $agent) {}
+    public function __construct(
+        private ActivityAgent $agent,
+        private OpenAIActivityImages $images,
+    ) {}
 
     public function reply(Store $session, Student $student, string $message): ActivityConversationReply
     {
@@ -21,13 +24,15 @@ final readonly class ActivityConversation
         $history = array_slice($history, -(self::MAX_MESSAGES - 2));
         $context = [...$history, ['role' => 'user', 'content' => $message]];
         $definition = $this->agent->generate($student, $context);
+        $mediaAssets = $this->images->generate($definition);
 
         try {
-            return DB::transaction(function () use ($session, $student, $definition, $context, $key): ActivityConversationReply {
+            return DB::transaction(function () use ($session, $student, $definition, $mediaAssets, $context, $key): ActivityConversationReply {
                 $activity = $student->activities()->create([
                     'public_id' => (string) Str::uuid(),
                     'definition' => $definition->toArray(),
                 ]);
+                $activity->mediaAssets()->createMany($mediaAssets);
                 $reply = new ActivityConversationReply(
                     content: "He creado una actividad para {$student->name}.",
                     activity: $activity,

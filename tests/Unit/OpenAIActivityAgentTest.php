@@ -33,6 +33,7 @@ final class OpenAIActivityAgentTest extends TestCase
         $this->assertInstanceOf(OpenAIActivityAgent::class, $agent);
         $this->assertInstanceOf(ActivityDefinition::class, $activity);
         $this->assertSame('Reconoce la letra m', $activity->toArray()['title']);
+        $this->assertCount(3, $activity->toArray()['media']);
         Http::assertSent(function (Request $request): bool {
             return $request->url() === 'https://api.openai.com/v1/responses'
                 && $request['model'] === 'gpt-5.6-luna'
@@ -89,6 +90,7 @@ final class OpenAIActivityAgentTest extends TestCase
             $content['items'][] = [
                 'id' => "question_{$number}",
                 'prompt' => '¿Cuál palabra comienza con m?',
+                'image_alt_text' => 'Una mesa infantil de madera sobre un fondo claro.',
                 'options' => [
                     ['id' => "mesa_{$number}", 'text' => 'mesa'],
                     ['id' => "casa_{$number}", 'text' => 'casa'],

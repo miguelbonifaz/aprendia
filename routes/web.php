@@ -6,6 +6,7 @@ use App\Http\Controllers\ChatMessageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PublicActivityAnswerController;
 use App\Http\Controllers\PublicActivityController;
+use App\Http\Controllers\PublicActivityMediaController;
 use App\Http\Controllers\PublicActivityResultController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentSelectionController;
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 Route::get('activities/{activity}', PublicActivityController::class)->name('activities.show');
+Route::get('activities/{activity}/media/{mediaId}', PublicActivityMediaController::class)
+    ->where('mediaId', '[a-z][a-z0-9_-]*')
+    ->name('activities.media.show');
 Route::post('activities/{activity}/answers', PublicActivityAnswerController::class)
     ->middleware('throttle:60,1')
     ->name('activities.answers.store');

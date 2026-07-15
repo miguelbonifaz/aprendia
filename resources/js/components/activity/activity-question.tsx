@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { ActivityProgress } from '@/components/activity/activity-progress';
-import { SpeechButton } from '@/components/activity/speech-button';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { PlayableActivityItem, RecognizeAndSelectFeedback } from '@/types';
@@ -38,13 +37,6 @@ export function ActivityQuestion({
     onContinue,
 }: Props) {
     const heading = useRef<HTMLHeadingElement>(null);
-    const narration = [
-        item.prompt,
-        ...item.options.map(
-            (option, index) =>
-                `Opción ${String.fromCharCode(65 + index)}: ${option.text}`,
-        ),
-    ].join('. ');
 
     useEffect(() => {
         heading.current?.focus();
@@ -54,6 +46,17 @@ export function ActivityQuestion({
         <section className="grid gap-5 rounded-3xl border bg-card p-5 shadow-sm sm:p-7">
             <ActivityProgress position={position} total={total} />
 
+            {item.image_url && (
+                <div className="overflow-hidden rounded-2xl border bg-muted/40">
+                    <img
+                        src={item.image_url}
+                        alt={item.image_alt_text ?? ''}
+                        className="aspect-square w-full object-cover sm:aspect-16/10"
+                        decoding="async"
+                    />
+                </div>
+            )}
+
             <h2
                 ref={heading}
                 tabIndex={-1}
@@ -61,8 +64,6 @@ export function ActivityQuestion({
             >
                 {item.prompt}
             </h2>
-
-            <SpeechButton text={narration} label="Escuchar pregunta" />
 
             <div className="grid gap-3" aria-label="Opciones de respuesta">
                 {item.options.map((option, index) => {

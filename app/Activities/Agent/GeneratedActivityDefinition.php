@@ -11,15 +11,18 @@ final class GeneratedActivityDefinition
     public static function fromContent(Student $student, array $content): ActivityDefinition
     {
         $items = [];
+        $media = [];
         $answerKey = [];
         $hints = [];
 
         foreach ($content['items'] as $item) {
             $itemId = (string) $item['id'];
+            $mediaId = "{$itemId}_image";
             $items[] = [
                 'id' => $itemId,
                 'data' => [
                     'prompt' => ['type' => 'text', 'text' => $item['prompt']],
+                    'illustration_media_id' => $mediaId,
                     'options' => array_map(
                         static fn (array $option): array => [
                             'id' => $option['id'],
@@ -29,6 +32,13 @@ final class GeneratedActivityDefinition
                     ),
                     'feedback' => $item['feedback'],
                 ],
+            ];
+            $media[] = [
+                'id' => $mediaId,
+                'type' => 'image',
+                'source' => "generated://{$mediaId}",
+                'alt_text' => $item['image_alt_text'],
+                'transcript' => null,
             ];
             $answerKey[$itemId] = [$item['correct_option_id']];
             $hints[$itemId] = [$item['hint']];
@@ -48,7 +58,7 @@ final class GeneratedActivityDefinition
                 'age' => $student->age,
             ],
             'items' => $items,
-            'media' => [],
+            'media' => $media,
             'answer_key' => $answerKey,
             'hints' => $hints,
             'result' => null,

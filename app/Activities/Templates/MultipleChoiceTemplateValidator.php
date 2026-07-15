@@ -12,8 +12,9 @@ final class MultipleChoiceTemplateValidator
         array $payload,
         string $contentKey,
         bool $requiresQuestion,
+        array $additionalDataKeys = [],
     ): void {
-        Validator::make($payload, self::rules($contentKey, $requiresQuestion))->validate();
+        Validator::make($payload, self::rules($contentKey, $requiresQuestion, $additionalDataKeys))->validate();
 
         $errors = [];
         $media = ActivityContentValidator::mediaById($payload);
@@ -61,14 +62,17 @@ final class MultipleChoiceTemplateValidator
     }
 
     /** @return array<string, array<int, mixed>> */
-    private static function rules(string $contentKey, bool $requiresQuestion): array
+    private static function rules(string $contentKey, bool $requiresQuestion, array $additionalDataKeys): array
     {
-        $dataKeys = $requiresQuestion
-            ? "{$contentKey},question,options,feedback"
-            : "{$contentKey},options,feedback";
+        $dataKeys = [$contentKey, 'options', 'feedback', ...$additionalDataKeys];
+
+        if ($requiresQuestion) {
+            $dataKeys[] = 'question';
+        }
+
         $contentPath = "items.*.data.{$contentKey}";
         $rules = [
-            'items.*.data' => ['required', "array:{$dataKeys}"],
+            'items.*.data' => ['required', 'array:'.implode(',', $dataKeys)],
             ...ActivityContentValidator::rules($contentPath),
             'items.*.data.options' => ['required', 'array', 'min:2'],
             'items.*.data.options.*' => ['required', 'array:id,content'],

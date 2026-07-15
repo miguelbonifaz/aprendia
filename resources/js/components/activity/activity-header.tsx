@@ -1,5 +1,4 @@
 import { BookOpen, Target, UserRound } from 'lucide-react';
-import { SpeechButton } from '@/components/activity/speech-button';
 import type { PlayableActivity } from '@/types';
 
 type Props = {
@@ -7,12 +6,6 @@ type Props = {
 };
 
 export function ActivityHeader({ activity }: Props) {
-    const narration = [
-        activity.title,
-        activity.instructions,
-        `Objetivo: ${activity.learning_objective}`,
-    ].join('. ');
-
     return (
         <header className="grid gap-5">
             <div className="flex items-center justify-between gap-3">
@@ -41,11 +34,6 @@ export function ActivityHeader({ activity }: Props) {
                     <p className="leading-relaxed text-muted-foreground">
                         {activity.instructions}
                     </p>
-                    <SpeechButton
-                        text={narration}
-                        label="Escuchar actividad"
-                        className="mt-2"
-                    />
                 </div>
                 <div className="flex items-start gap-3 rounded-2xl bg-muted/70 p-4">
                     <Target className="mt-0.5 size-5 shrink-0 text-primary" />

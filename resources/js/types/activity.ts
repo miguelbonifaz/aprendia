@@ -74,6 +74,7 @@ export type RecognizeAndSelectOption = ActivityChoiceOption;
 
 export type RecognizeAndSelectItemData = {
     prompt: RecognizeAndSelectContent;
+    illustration_media_id?: string;
     options: RecognizeAndSelectOption[];
     feedback: {
         correct: string;

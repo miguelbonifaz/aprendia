@@ -8,6 +8,8 @@ export type PlayableActivityOption = {
 export type PlayableActivityItem = {
     id: string;
     prompt: string;
+    image_url: string | null;
+    image_alt_text: string | null;
     options: PlayableActivityOption[];
 };
 
