@@ -3,7 +3,7 @@ export type ActivityDifficulty = 'easy' | 'medium' | 'hard';
 export type ActivityMediaType = 'image' | 'audio';
 
 export type ActivityTemplate =
-    'recognize_and_select' | 'listen_read_and_respond';
+    'recognize_and_select' | 'listen_read_and_respond' | 'match_with_lines';
 
 export type ActivityContentType = 'text' | ActivityMediaType;
 
@@ -104,3 +104,27 @@ export type ListenReadAndRespondActivityDefinition = ActivityDefinition<
 >;
 
 export type ListenReadAndRespondFeedback = ActivityAnswerFeedback;
+
+export type MatchWithLinesItemData = {
+    left: ActivityContent;
+    right: ActivityChoiceOption;
+    feedback: {
+        correct: string;
+        incorrect: string;
+    };
+};
+
+export type MatchWithLinesActivityDefinition = ActivityDefinition<
+    MatchWithLinesItemData,
+    'match_with_lines'
+>;
+
+export type MatchWithLinesAnswers = Record<string, string>;
+
+export type MatchWithLinesFeedback = {
+    left_item_id: string;
+    right_item_id: string;
+    is_correct: boolean;
+    message: string;
+    hint: string | null;
+};

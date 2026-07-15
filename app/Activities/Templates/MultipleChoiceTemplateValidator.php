@@ -2,9 +2,7 @@
 
 namespace App\Activities\Templates;
 
-use App\Activities\ActivityContentType;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 final class MultipleChoiceTemplateValidator
@@ -18,12 +16,17 @@ final class MultipleChoiceTemplateValidator
         Validator::make($payload, self::rules($contentKey, $requiresQuestion))->validate();
 
         $errors = [];
-        $media = self::mediaById($payload);
+        $media = ActivityContentValidator::mediaById($payload);
 
         foreach ($payload['items'] as $index => $item) {
             $itemId = (string) $item['id'];
             $data = $item['data'];
-            self::validateContent($data[$contentKey], "items.{$index}.data.{$contentKey}", $media, $errors);
+            ActivityContentValidator::validate(
+                $data[$contentKey],
+                "items.{$index}.data.{$contentKey}",
+                $media,
+                $errors,
+            );
 
             $optionIds = [];
             foreach ($data['options'] as $optionIndex => $option) {
@@ -32,7 +35,7 @@ final class MultipleChoiceTemplateValidator
                     $errors["items.{$index}.data.options.{$optionIndex}.id"][] = 'The option ID must be unique within its item.';
                 }
                 $optionIds[] = $optionId;
-                self::validateContent(
+                ActivityContentValidator::validate(
                     $option['content'],
                     "items.{$index}.data.options.{$optionIndex}.content",
                     $media,
@@ -66,17 +69,11 @@ final class MultipleChoiceTemplateValidator
         $contentPath = "items.*.data.{$contentKey}";
         $rules = [
             'items.*.data' => ['required', "array:{$dataKeys}"],
-            $contentPath => ['required', 'array:type,text,media_id'],
-            "{$contentPath}.type" => ['required', Rule::enum(ActivityContentType::class)],
-            "{$contentPath}.text" => ['sometimes', 'string', 'max:5000'],
-            "{$contentPath}.media_id" => ['sometimes', 'string', 'max:100'],
+            ...ActivityContentValidator::rules($contentPath),
             'items.*.data.options' => ['required', 'array', 'min:2'],
             'items.*.data.options.*' => ['required', 'array:id,content'],
             'items.*.data.options.*.id' => ['required', 'string', 'max:100', 'regex:/^[a-z][a-z0-9_-]*$/'],
-            'items.*.data.options.*.content' => ['required', 'array:type,text,media_id'],
-            'items.*.data.options.*.content.type' => ['required', Rule::enum(ActivityContentType::class)],
-            'items.*.data.options.*.content.text' => ['sometimes', 'string', 'max:5000'],
-            'items.*.data.options.*.content.media_id' => ['sometimes', 'string', 'max:100'],
+            ...ActivityContentValidator::rules('items.*.data.options.*.content'),
             'items.*.data.feedback' => ['required', 'array:correct,incorrect'],
             'items.*.data.feedback.correct' => ['required', 'string', 'max:1000'],
             'items.*.data.feedback.incorrect' => ['required', 'string', 'max:1000'],
@@ -87,60 +84,5 @@ final class MultipleChoiceTemplateValidator
         }
 
         return $rules;
-    }
-
-    /**
-     * @param array<string, mixed> $payload
-     * @return array<string, array<string, mixed>>
-     */
-    private static function mediaById(array $payload): array
-    {
-        $mediaById = [];
-        foreach ($payload['media'] as $media) {
-            $mediaById[(string) $media['id']] = $media;
-        }
-
-        return $mediaById;
-    }
-
-    /**
-     * @param array<string, mixed> $content
-     * @param array<string, array<string, mixed>> $media
-     * @param array<string, list<string>> $errors
-     */
-    private static function validateContent(array $content, string $path, array $media, array &$errors): void
-    {
-        $type = ActivityContentType::from((string) $content['type']);
-        if ($type === ActivityContentType::Text) {
-            if (! is_string($content['text'] ?? null) || trim($content['text']) === '') {
-                $errors["{$path}.text"][] = 'Text content must provide text.';
-            }
-            if (array_key_exists('media_id', $content)) {
-                $errors["{$path}.media_id"][] = 'Text content cannot reference media.';
-            }
-
-            return;
-        }
-
-        if (array_key_exists('text', $content)) {
-            $errors["{$path}.text"][] = 'Media content cannot provide text.';
-        }
-
-        $mediaId = $content['media_id'] ?? null;
-        if (! is_string($mediaId) || ! isset($media[$mediaId])) {
-            $errors["{$path}.media_id"][] = 'The referenced media does not exist.';
-
-            return;
-        }
-
-        $referencedMedia = $media[$mediaId];
-        if (($referencedMedia['type'] ?? null) !== $type->value) {
-            $errors["{$path}.media_id"][] = 'The referenced media type does not match the content.';
-        }
-
-        $accessibilityKey = $type === ActivityContentType::Image ? 'alt_text' : 'transcript';
-        if (! is_string($referencedMedia[$accessibilityKey] ?? null) || trim($referencedMedia[$accessibilityKey]) === '') {
-            $errors["media.{$mediaId}.{$accessibilityKey}"][] = "The referenced media requires {$accessibilityKey}.";
-        }
     }
 }

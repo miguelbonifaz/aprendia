@@ -2,8 +2,9 @@
 
 namespace App\Activities;
 
-use App\Activities\Templates\RecognizeAndSelectTemplateValidator;
 use App\Activities\Templates\ListenReadAndRespondTemplateValidator;
+use App\Activities\Templates\MatchWithLinesTemplateValidator;
+use App\Activities\Templates\RecognizeAndSelectTemplateValidator;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator as LaravelValidator;
@@ -38,6 +39,7 @@ final class ActivityDefinitionValidator
         match (ActivityTemplate::from((string) $definition['template'])) {
             ActivityTemplate::RecognizeAndSelect => RecognizeAndSelectTemplateValidator::validate($definition),
             ActivityTemplate::ListenReadAndRespond => ListenReadAndRespondTemplateValidator::validate($definition),
+            ActivityTemplate::MatchWithLines => MatchWithLinesTemplateValidator::validate($definition),
         };
 
         return $definition;
