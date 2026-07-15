@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Activities\Agent\ActivityAgent;
 use App\Activities\Agent\CodexActivityAgent;
+use App\Activities\Agent\OpenAIActivityAgent;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
@@ -25,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ActivityAgent::class, function (Application $app): ActivityAgent {
             return match (config('activity_agent.driver')) {
                 'codex' => $app->make(CodexActivityAgent::class),
+                'openai' => $app->make(OpenAIActivityAgent::class),
                 default => throw new InvalidArgumentException('Unsupported activity agent driver.'),
             };
         });
