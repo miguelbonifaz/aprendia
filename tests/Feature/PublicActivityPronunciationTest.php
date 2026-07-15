@@ -14,7 +14,10 @@ final class PublicActivityPronunciationTest extends TestCase
 
     public function test_it_generates_and_reuses_pronunciation_for_an_existing_visual_activity(): void
     {
-        config(['activity_agent.openai.api_key' => 'test-key']);
+        config([
+            'activity_agent.openai.api_key' => 'test-key',
+            'activity_agent.openai.speech_voice' => 'cedar',
+        ]);
         Http::preventStrayRequests();
         Http::fake(['api.openai.com/v1/audio/speech' => Http::response(
             'mp3-content',
@@ -22,6 +25,11 @@ final class PublicActivityPronunciationTest extends TestCase
             ['Content-Type' => 'audio/mpeg'],
         )]);
         $activity = Activity::factory()->create(['definition' => $this->definition()]);
+        $activity->mediaAssets()->create([
+            'media_id' => 'question_doll_pronunciation',
+            'mime_type' => 'audio/mpeg',
+            'content' => base64_encode('old-nova-audio'),
+        ]);
         $route = route('activities.pronunciation.show', [
             'activity' => $activity,
             'itemId' => 'question_doll',
@@ -35,10 +43,9 @@ final class PublicActivityPronunciationTest extends TestCase
 
         Http::assertSentCount(1);
         Http::assertSent(fn (Request $request): bool => $request['input'] === 'Muñeca');
-        $this->assertDatabaseHas('activity_media', [
-            'activity_id' => $activity->id,
-            'media_id' => 'question_doll_pronunciation',
-        ]);
+        $media = $activity->refresh()->mediaAssets;
+        $this->assertCount(2, $media);
+        $this->assertNotNull($media->first(fn ($asset): bool => str_starts_with($asset->media_id, 'pronunciation_')));
     }
 
     /** @return array<string, mixed> */

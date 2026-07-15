@@ -12,7 +12,9 @@ final class PublicActivityPronunciationController extends Controller
 {
     public function __invoke(Activity $activity, string $itemId, OpenAIActivitySpeech $speech): Response
     {
-        $mediaId = "{$itemId}_pronunciation";
+        $model = (string) config('activity_agent.openai.speech_model');
+        $voice = (string) config('activity_agent.openai.speech_voice');
+        $mediaId = 'pronunciation_'.substr(hash('sha256', "{$itemId}:{$model}:{$voice}"), 0, 24);
         $media = $activity->mediaAssets()->where('media_id', $mediaId)->first();
 
         if ($media === null) {
