@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ChatMessageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentSelectionController;
@@ -15,6 +16,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('students/{student}', [StudentController::class, 'update'])->name('students.update');
     Route::post('students/{student}/select', StudentSelectionController::class)->name('students.select');
     Route::get('chat', ChatController::class)->name('chat.index');
+    Route::post('chat/messages', ChatMessageController::class)
+        ->middleware('throttle:activity-agent')
+        ->name('chat.messages.store');
 });
 
 require __DIR__.'/settings.php';
