@@ -52,7 +52,7 @@ export function ActivityQuestion({
                     <img
                         src={item.image_url}
                         alt={item.image_alt_text ?? ''}
-                        className="aspect-square w-full object-cover sm:aspect-16/10"
+                        className="block h-auto w-full object-contain"
                         decoding="async"
                     />
                 </div>
