@@ -15,8 +15,8 @@ export default function ActivityShow({ activity }: Props) {
     return (
         <>
             <Head title={activity.title} />
-            <main className="min-h-svh bg-linear-to-b from-primary/5 via-background to-background px-4 py-5 sm:px-6 sm:py-8">
-                <div className="mx-auto grid w-full max-w-3xl gap-6 sm:gap-8">
+            <main className="min-h-svh bg-linear-to-b from-primary/5 via-background to-background px-4 py-4 sm:px-6 lg:h-svh lg:overflow-hidden lg:px-8 lg:py-5">
+                <div className="mx-auto grid w-full max-w-7xl gap-4 lg:h-full lg:grid-rows-[auto_minmax(0,1fr)]">
                     <ActivityHeader activity={activity} />
                     {player.result ? (
                         <ActivityResult

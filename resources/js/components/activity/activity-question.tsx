@@ -1,13 +1,9 @@
-import {
-    ArrowRight,
-    CheckCircle2,
-    CircleHelp,
-    LoaderCircle,
-    XCircle,
-} from 'lucide-react';
+import { ArrowRight, LoaderCircle } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { ActivityMediaPanel } from '@/components/activity/activity-media-panel';
+import { ActivityOptionList } from '@/components/activity/activity-option-list';
 import { ActivityProgress } from '@/components/activity/activity-progress';
-import { ActivityPronunciationButton } from '@/components/activity/activity-pronunciation-button';
+import { ActivityResponseFeedback } from '@/components/activity/activity-response-feedback';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { PlayableActivityItem, RecognizeAndSelectFeedback } from '@/types';
@@ -38,135 +34,66 @@ export function ActivityQuestion({
     onContinue,
 }: Props) {
     const heading = useRef<HTMLHeadingElement>(null);
+    const hasMedia = Boolean(item.image_url || item.audio_url);
 
     useEffect(() => {
         heading.current?.focus();
     }, [item.id]);
 
     return (
-        <section className="grid gap-5 rounded-3xl border bg-card p-5 shadow-sm sm:p-7">
-            <ActivityProgress position={position} total={total} />
+        <section
+            className={cn(
+                'grid min-h-0 gap-4 rounded-3xl border bg-card p-4 shadow-sm sm:p-5 lg:h-full lg:gap-5',
+                hasMedia &&
+                    'lg:grid-cols-[minmax(0,0.82fr)_minmax(22rem,1.18fr)]',
+            )}
+        >
+            <article className="order-2 grid min-h-0 content-start gap-4 lg:order-1 lg:overflow-y-auto lg:pr-1">
+                <ActivityProgress position={position} total={total} />
 
-            {item.image_url && (
-                <div className="overflow-hidden rounded-2xl border bg-muted/40">
-                    <img
-                        src={item.image_url}
-                        alt={item.image_alt_text ?? ''}
-                        className="block h-auto w-full object-contain"
-                        decoding="async"
+                <h2
+                    ref={heading}
+                    tabIndex={-1}
+                    className="text-2xl leading-tight font-bold tracking-tight text-balance outline-none lg:text-3xl"
+                >
+                    {item.prompt}
+                </h2>
+
+                <div className="grid gap-2.5">
+                    <p className="text-sm font-semibold text-muted-foreground">
+                        Elige una respuesta
+                    </p>
+                    <ActivityOptionList
+                        options={item.options}
+                        selectedOptionId={selectedOptionId}
+                        feedback={feedback}
+                        selecting={selecting}
+                        onSelect={onSelect}
                     />
                 </div>
-            )}
 
-            {item.audio_url && (
-                <ActivityPronunciationButton audioUrl={item.audio_url} />
-            )}
+                <ActivityResponseFeedback feedback={feedback} error={error} />
 
-            <h2
-                ref={heading}
-                tabIndex={-1}
-                className="text-xl leading-snug font-bold outline-none sm:text-2xl"
-            >
-                {item.prompt}
-            </h2>
-
-            <div className="grid gap-3" aria-label="Opciones de respuesta">
-                {item.options.map((option, index) => {
-                    const isSelected = selectedOptionId === option.id;
-                    const isCorrect = isSelected && feedback?.is_correct;
-                    const isIncorrect =
-                        isSelected && feedback && !feedback.is_correct;
-
-                    return (
-                        <button
-                            key={option.id}
-                            type="button"
-                            aria-pressed={isSelected}
-                            disabled={
-                                selecting || Boolean(feedback?.is_correct)
-                            }
-                            onClick={() => onSelect(option.id)}
-                            className={cn(
-                                'flex min-h-16 w-full items-center gap-3 rounded-2xl border-2 bg-background p-3 text-left font-medium transition focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none sm:p-4',
-                                'hover:border-primary/50 hover:bg-primary/5',
-                                isSelected && 'border-primary bg-primary/5',
-                                isCorrect &&
-                                    'border-emerald-500 bg-emerald-500/10',
-                                isIncorrect &&
-                                    'border-destructive bg-destructive/10',
-                                selecting && 'cursor-wait',
-                            )}
-                        >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-sm font-bold">
-                                {String.fromCharCode(65 + index)}
-                            </span>
-                            <span className="flex-1">{option.text}</span>
-                            {isCorrect && (
-                                <CheckCircle2 className="size-6 text-emerald-600" />
-                            )}
-                            {isIncorrect && (
-                                <XCircle className="size-6 text-destructive" />
-                            )}
-                            {isSelected && selecting && (
-                                <LoaderCircle className="size-5 animate-spin text-primary" />
-                            )}
-                        </button>
-                    );
-                })}
-            </div>
-
-            {feedback && (
-                <div
-                    className={cn(
-                        'grid gap-2 rounded-2xl border p-4',
-                        feedback.is_correct
-                            ? 'border-emerald-500/30 bg-emerald-500/10'
-                            : 'border-amber-500/30 bg-amber-500/10',
-                    )}
-                    role="status"
-                    aria-live="polite"
+                <Button
+                    type="button"
+                    size="lg"
+                    className="w-full transition-transform active:scale-[0.98] sm:ml-auto sm:w-auto"
+                    disabled={!feedback || selecting || finishing}
+                    onClick={onContinue}
                 >
-                    <div className="flex items-start gap-2 font-semibold">
-                        {feedback.is_correct ? (
-                            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
-                        ) : (
-                            <CircleHelp className="mt-0.5 size-5 shrink-0 text-amber-600" />
-                        )}
-                        <span>{feedback.message}</span>
-                    </div>
-                    {feedback.hint && (
-                        <p className="pl-7 text-sm text-muted-foreground">
-                            Pista: {feedback.hint}
-                        </p>
-                    )}
-                    {!feedback.is_correct && (
-                        <p className="pl-7 text-sm text-muted-foreground">
-                            Puedes elegir otra respuesta o continuar.
-                        </p>
-                    )}
+                    {finishing && <LoaderCircle className="animate-spin" />}
+                    {position === total
+                        ? 'Ver resultado'
+                        : 'Siguiente pregunta'}
+                    {!finishing && <ArrowRight />}
+                </Button>
+            </article>
+
+            {hasMedia && (
+                <div className="order-1 min-h-0 lg:order-2">
+                    <ActivityMediaPanel item={item} />
                 </div>
             )}
-
-            {error && (
-                <p
-                    className="text-sm font-medium text-destructive"
-                    role="alert"
-                >
-                    {error}
-                </p>
-            )}
-
-            <Button
-                type="button"
-                size="lg"
-                className="w-full sm:ml-auto sm:w-auto"
-                disabled={!feedback || selecting || finishing}
-                onClick={onContinue}
-            >
-                {finishing && <LoaderCircle className="animate-spin" />}
-                {position === total ? 'Ver resultado' : 'Siguiente pregunta'}
-                {!finishing && <ArrowRight />}
-            </Button>
         </section>
     );
 }

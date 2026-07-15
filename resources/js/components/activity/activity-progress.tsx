@@ -4,28 +4,31 @@ type Props = {
 };
 
 export function ActivityProgress({ position, total }: Props) {
-    const percentage = Math.round((position / total) * 100);
-
     return (
-        <div className="grid gap-3">
-            <div className="flex items-center justify-between text-sm font-medium">
+        <div className="grid gap-2.5">
+            <div className="flex items-center justify-between gap-3 text-sm font-semibold">
                 <span className="text-primary">
-                    Pregunta {position} de {total}
+                    Paso {position} de {total}
                 </span>
-                <span className="text-muted-foreground">{percentage}%</span>
+                <span className="text-muted-foreground">Sigue avanzando</span>
             </div>
             <div
-                className="h-2 overflow-hidden rounded-full bg-muted"
+                className="flex gap-2"
                 role="progressbar"
                 aria-label="Progreso de la actividad"
                 aria-valuemin={0}
                 aria-valuemax={total}
                 aria-valuenow={position}
             >
-                <div
-                    className="h-full rounded-full bg-primary transition-[width] duration-300"
-                    style={{ width: `${percentage}%` }}
-                />
+                {Array.from({ length: total }, (_, index) => (
+                    <span
+                        key={index}
+                        className={`h-2 flex-1 rounded-full transition-colors duration-300 ${
+                            index < position ? 'bg-primary' : 'bg-muted'
+                        }`}
+                        aria-hidden="true"
+                    />
+                ))}
             </div>
         </div>
     );
