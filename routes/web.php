@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ChatConversationController;
 use App\Http\Controllers\ChatMessageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
@@ -19,6 +20,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('chat/messages', ChatMessageController::class)
         ->middleware('throttle:activity-agent')
         ->name('chat.messages.store');
+    Route::delete('chat/conversation', ChatConversationController::class)
+        ->name('chat.conversation.destroy');
 });
 
 require __DIR__.'/settings.php';

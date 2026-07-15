@@ -1,56 +1,57 @@
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, MessageCircle, UserRound } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Head } from '@inertiajs/react';
+import { useState } from 'react';
+import { ChatComposer } from '@/components/chat/chat-composer';
+import { ChatHeader } from '@/components/chat/chat-header';
+import { ChatMessages } from '@/components/chat/chat-messages';
+import { useChat } from '@/hooks/use-chat';
 import { index as chat } from '@/routes/chat';
-import { index as students } from '@/routes/students';
-import type { Student } from '@/types';
+import type { ChatMessage, Student } from '@/types';
 
-export default function ChatIndex({ student }: { student: Student }) {
+type Props = {
+    student: Student;
+    messages: ChatMessage[];
+};
+
+export default function ChatIndex({
+    student,
+    messages: initialMessages,
+}: Props) {
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const conversation = useChat(initialMessages);
+
+    async function startNewConversation() {
+        if (await conversation.clearConversation()) {
+            setDialogOpen(false);
+        }
+    }
+
     return (
         <>
             <Head title={`Chat con ${student.name}`} />
 
-            <div className="flex flex-1 items-center justify-center p-4 md:p-8">
-                <Card className="w-full max-w-2xl">
-                    <CardHeader className="items-center text-center">
-                        <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-                            <UserRound className="size-6" />
-                        </div>
-                        <CardTitle className="text-xl">
-                            Trabajando con {student.name}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                            {student.age} {student.age === 1 ? 'año' : 'años'}
-                        </p>
-                    </CardHeader>
-
-                    <CardContent className="grid gap-6">
-                        <div className="flex min-h-48 flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-muted/30 p-6 text-center">
-                            <MessageCircle className="size-8 text-muted-foreground" />
-                            <div className="grid max-w-md gap-1">
-                                <h2 className="font-semibold">
-                                    El espacio de conversación está listo
-                                </h2>
-                                <p className="text-sm text-muted-foreground">
-                                    Aquí podrás explicar qué necesita aprender o
-                                    practicar {student.name}. La conversación se
-                                    incorporará en la siguiente etapa.
-                                </p>
-                            </div>
-                        </div>
-
-                        <Button
-                            asChild
-                            variant="outline"
-                            className="justify-self-start"
-                        >
-                            <Link href={students()}>
-                                <ArrowLeft /> Cambiar alumno
-                            </Link>
-                        </Button>
-                    </CardContent>
-                </Card>
+            <div className="flex h-[calc(100svh-4rem)] min-h-0 flex-1 flex-col overflow-hidden bg-background">
+                <ChatHeader
+                    student={student}
+                    hasMessages={conversation.messages.length > 0}
+                    dialogOpen={dialogOpen}
+                    onDialogOpenChange={setDialogOpen}
+                    onNewConversation={startNewConversation}
+                    resetting={conversation.resetting}
+                    sending={conversation.sending}
+                    resetError={conversation.resetError}
+                />
+                <ChatMessages
+                    messages={conversation.messages}
+                    studentName={student.name}
+                    responding={conversation.sending}
+                />
+                <ChatComposer
+                    message={conversation.message}
+                    onMessageChange={conversation.setMessage}
+                    onSubmit={conversation.sendMessage}
+                    processing={conversation.sending || conversation.resetting}
+                    error={conversation.error}
+                />
             </div>
         </>
     );

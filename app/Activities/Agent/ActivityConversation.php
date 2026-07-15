@@ -13,8 +13,8 @@ final readonly class ActivityConversation
 
     public function reply(Store $session, Student $student, string $message): string
     {
-        $key = "activity_agent_conversations.{$student->id}";
-        $history = $this->validHistory($session->get($key, []));
+        $key = $this->sessionKey($student);
+        $history = $this->history($session, $student);
         $history = array_slice($history, -(self::MAX_MESSAGES - 2));
         $context = [...$history, ['role' => 'user', 'content' => $message]];
         $reply = $this->agent->respond($student, $context);
@@ -25,6 +25,27 @@ final readonly class ActivityConversation
         ]);
 
         return $reply;
+    }
+
+    /**
+     * @return list<array{role: 'user'|'assistant', content: string}>
+     */
+    public function history(Store $session, Student $student): array
+    {
+        return array_slice(
+            $this->validHistory($session->get($this->sessionKey($student), [])),
+            -self::MAX_MESSAGES,
+        );
+    }
+
+    public function clear(Store $session, Student $student): void
+    {
+        $session->forget($this->sessionKey($student));
+    }
+
+    private function sessionKey(Student $student): string
+    {
+        return "activity_agent_conversations.{$student->id}";
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Activities\Agent\ActivityConversation;
 use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -10,6 +11,8 @@ use Inertia\Response;
 
 class ChatController extends Controller
 {
+    public function __construct(private readonly ActivityConversation $conversation) {}
+
     /**
      * Handle the incoming request.
      */
@@ -31,6 +34,7 @@ class ChatController extends Controller
 
         return Inertia::render('chat/index', [
             'student' => $this->studentPayload($student),
+            'messages' => $this->conversation->history($request->session(), $student),
         ]);
     }
 
