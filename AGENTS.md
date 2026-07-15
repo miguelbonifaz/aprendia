@@ -2,7 +2,9 @@
 
 - Do not use Pest.
 - Do not use React Doctor.
+- Do not run PHPStan.
 - Use sub-agents to speed up work when necessary; avoid them for simple tasks.
+- Work directly and exclusively on the `main` branch. Do not create, switch to, or use any other branch.
 
 <laravel-boost-guidelines>
 === foundation rules ===
