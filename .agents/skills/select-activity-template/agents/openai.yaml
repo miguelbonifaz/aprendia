@@ -1,0 +1,4 @@
+interface:
+  display_name: "Elegir template de actividad"
+  short_description: "Selecciona el ejercicio adecuado para el alumno"
+  default_prompt: "Usa $select-activity-template para recomendar el template más adecuado según el alumno y su objetivo."
