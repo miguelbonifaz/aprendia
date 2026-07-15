@@ -3,8 +3,7 @@ export type ActivityDifficulty = 'easy' | 'medium' | 'hard';
 export type ActivityMediaType = 'image' | 'audio';
 
 export type ActivityTemplate =
-    | 'recognize_and_select'
-    | 'listen_read_and_respond';
+    'recognize_and_select' | 'listen_read_and_respond';
 
 export type ActivityContentType = 'text' | ActivityMediaType;
 
