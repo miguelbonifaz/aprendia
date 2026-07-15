@@ -42,11 +42,12 @@ final class ActivityContentSchema
         return [
             'type' => 'object',
             'additionalProperties' => false,
-            'required' => ['id', 'prompt', 'image_alt_text', 'options', 'correct_option_id', 'hint', 'feedback'],
+            'required' => ['id', 'prompt', 'image_alt_text', 'spoken_word', 'options', 'correct_option_id', 'hint', 'feedback'],
             'properties' => [
                 'id' => $identifier,
                 'prompt' => $text,
                 'image_alt_text' => $text,
+                'spoken_word' => $text,
                 'options' => [
                     'type' => 'array',
                     'minItems' => 3,

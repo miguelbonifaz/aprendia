@@ -14,11 +14,12 @@ final class RecognizeAndSelectTemplateValidator
             payload: $payload,
             contentKey: 'prompt',
             requiresQuestion: false,
-            additionalDataKeys: ['illustration_media_id'],
+            additionalDataKeys: ['illustration_media_id', 'spoken_word'],
         );
 
         Validator::make($payload, [
             'items.*.data.illustration_media_id' => ['sometimes', 'string', 'max:100'],
+            'items.*.data.spoken_word' => ['sometimes', 'string', 'max:100'],
         ])->validate();
 
         $media = ActivityContentValidator::mediaById($payload);

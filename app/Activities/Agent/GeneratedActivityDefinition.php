@@ -23,6 +23,7 @@ final class GeneratedActivityDefinition
                 'data' => [
                     'prompt' => ['type' => 'text', 'text' => $item['prompt']],
                     'illustration_media_id' => $mediaId,
+                    'spoken_word' => $item['spoken_word'],
                     'options' => array_map(
                         static fn (array $option): array => [
                             'id' => $option['id'],

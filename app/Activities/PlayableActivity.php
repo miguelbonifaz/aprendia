@@ -41,7 +41,7 @@ final readonly class PlayableActivity
      *     title: string,
      *     instructions: string,
      *     learning_objective: string,
-     *     items: list<array{id: string, prompt: string, image_url: ?string, image_alt_text: ?string, options: list<array{id: string, text: string}>}>
+     *     items: list<array{id: string, prompt: string, image_url: ?string, image_alt_text: ?string, audio_url: ?string, options: list<array{id: string, text: string}>}>
      * }
      */
     public function toPublicArray(): array
@@ -68,6 +68,19 @@ final readonly class PlayableActivity
             $itemId,
             $selectedOptionId,
         );
+    }
+
+    public function spokenWordFor(string $itemId): string
+    {
+        foreach ($this->payload['items'] as $item) {
+            $spokenWord = self::spokenWord($item);
+
+            if ($item['id'] === $itemId && is_string($item['data']['illustration_media_id'] ?? null) && $spokenWord !== null) {
+                return $spokenWord;
+            }
+        }
+
+        self::notFound();
     }
 
     /** @param array<string, string> $answers */
@@ -107,6 +120,7 @@ final readonly class PlayableActivity
     {
         $mediaId = $item['data']['illustration_media_id'] ?? null;
         $illustration = is_string($mediaId) ? ($media[$mediaId] ?? null) : null;
+        $spokenWord = self::spokenWord($item);
 
         return [
             'id' => (string) $item['id'],
@@ -115,6 +129,9 @@ final readonly class PlayableActivity
                 ? route('activities.media.show', [$this->publicId, $mediaId], absolute: false)
                 : null,
             'image_alt_text' => is_array($illustration) ? (string) $illustration['alt_text'] : null,
+            'audio_url' => is_array($illustration) && $spokenWord !== null
+                ? route('activities.pronunciation.show', [$this->publicId, $item['id']], absolute: false)
+                : null,
             'options' => array_map(
                 static fn (array $option): array => [
                     'id' => (string) $option['id'],
@@ -123,6 +140,22 @@ final readonly class PlayableActivity
                 $item['data']['options'],
             ),
         ];
+    }
+
+    /** @param array<string, mixed> $item */
+    private static function spokenWord(array $item): ?string
+    {
+        $spokenWord = $item['data']['spoken_word'] ?? null;
+
+        if (is_string($spokenWord) && trim($spokenWord) !== '') {
+            return trim($spokenWord);
+        }
+
+        $correctFeedback = $item['data']['feedback']['correct'] ?? null;
+
+        return is_string($correctFeedback) && preg_match('/«([^»]{1,100})»/u', $correctFeedback, $matches) === 1
+            ? trim($matches[1])
+            : null;
     }
 
     private static function notFound(): never

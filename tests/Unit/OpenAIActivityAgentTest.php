@@ -91,6 +91,7 @@ final class OpenAIActivityAgentTest extends TestCase
                 'id' => "question_{$number}",
                 'prompt' => '¿Cuál palabra comienza con m?',
                 'image_alt_text' => 'Una mesa infantil de madera sobre un fondo claro.',
+                'spoken_word' => 'mesa',
                 'options' => [
                     ['id' => "mesa_{$number}", 'text' => 'mesa'],
                     ['id' => "casa_{$number}", 'text' => 'casa'],

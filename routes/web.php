@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PublicActivityAnswerController;
 use App\Http\Controllers\PublicActivityController;
 use App\Http\Controllers\PublicActivityMediaController;
+use App\Http\Controllers\PublicActivityPronunciationController;
 use App\Http\Controllers\PublicActivityResultController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentSelectionController;
@@ -17,6 +18,10 @@ Route::get('activities/{activity}', PublicActivityController::class)->name('acti
 Route::get('activities/{activity}/media/{mediaId}', PublicActivityMediaController::class)
     ->where('mediaId', '[a-z][a-z0-9_-]*')
     ->name('activities.media.show');
+Route::get('activities/{activity}/items/{itemId}/pronunciation', PublicActivityPronunciationController::class)
+    ->where('itemId', '[a-z][a-z0-9_-]*')
+    ->middleware('throttle:30,1')
+    ->name('activities.pronunciation.show');
 Route::post('activities/{activity}/answers', PublicActivityAnswerController::class)
     ->middleware('throttle:60,1')
     ->name('activities.answers.store');

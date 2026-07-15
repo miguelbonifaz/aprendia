@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { ActivityProgress } from '@/components/activity/activity-progress';
+import { ActivityPronunciationButton } from '@/components/activity/activity-pronunciation-button';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { PlayableActivityItem, RecognizeAndSelectFeedback } from '@/types';
@@ -55,6 +56,10 @@ export function ActivityQuestion({
                         decoding="async"
                     />
                 </div>
+            )}
+
+            {item.audio_url && (
+                <ActivityPronunciationButton audioUrl={item.audio_url} />
             )}
 
             <h2

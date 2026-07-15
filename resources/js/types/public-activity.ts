@@ -10,6 +10,7 @@ export type PlayableActivityItem = {
     prompt: string;
     image_url: string | null;
     image_alt_text: string | null;
+    audio_url: string | null;
     options: PlayableActivityOption[];
 };
 
