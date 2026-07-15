@@ -6,6 +6,8 @@ import {
     XCircle,
 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { ActivityProgress } from '@/components/activity/activity-progress';
+import { SpeechButton } from '@/components/activity/speech-button';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { PlayableActivityItem, RecognizeAndSelectFeedback } from '@/types';
@@ -36,6 +38,13 @@ export function ActivityQuestion({
     onContinue,
 }: Props) {
     const heading = useRef<HTMLHeadingElement>(null);
+    const narration = [
+        item.prompt,
+        ...item.options.map(
+            (option, index) =>
+                `Opción ${String.fromCharCode(65 + index)}: ${option.text}`,
+        ),
+    ].join('. ');
 
     useEffect(() => {
         heading.current?.focus();
@@ -43,29 +52,7 @@ export function ActivityQuestion({
 
     return (
         <section className="grid gap-5 rounded-3xl border bg-card p-5 shadow-sm sm:p-7">
-            <div className="grid gap-3">
-                <div className="flex items-center justify-between text-sm font-medium">
-                    <span className="text-primary">
-                        Pregunta {position} de {total}
-                    </span>
-                    <span className="text-muted-foreground">
-                        {Math.round((position / total) * 100)}%
-                    </span>
-                </div>
-                <div
-                    className="h-2 overflow-hidden rounded-full bg-muted"
-                    role="progressbar"
-                    aria-label="Progreso de la actividad"
-                    aria-valuemin={0}
-                    aria-valuemax={total}
-                    aria-valuenow={position}
-                >
-                    <div
-                        className="h-full rounded-full bg-primary transition-[width] duration-300"
-                        style={{ width: `${(position / total) * 100}%` }}
-                    />
-                </div>
-            </div>
+            <ActivityProgress position={position} total={total} />
 
             <h2
                 ref={heading}
@@ -74,6 +61,8 @@ export function ActivityQuestion({
             >
                 {item.prompt}
             </h2>
+
+            <SpeechButton text={narration} label="Escuchar pregunta" />
 
             <div className="grid gap-3" aria-label="Opciones de respuesta">
                 {item.options.map((option, index) => {
