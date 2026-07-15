@@ -1,5 +1,6 @@
-import { Bot, MessageCircle } from 'lucide-react';
+import { Bot, ExternalLink, MessageCircle } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import type { ChatMessage } from '@/types';
 
@@ -60,15 +61,29 @@ export function ChatMessages({ messages, studentName, responding }: Props) {
                                     <Bot className="size-4" />
                                 </div>
                             )}
-                            <p
+                            <div
                                 className={
                                     message.role === 'user'
-                                        ? 'max-w-[85%] rounded-2xl rounded-br-md bg-primary px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap text-primary-foreground md:max-w-[75%]'
-                                        : 'max-w-[calc(100%-2.75rem)] pt-1 text-sm leading-relaxed whitespace-pre-wrap text-foreground'
+                                        ? 'max-w-[85%] rounded-2xl rounded-br-md bg-primary px-4 py-3 text-sm leading-relaxed text-primary-foreground md:max-w-[75%]'
+                                        : 'grid max-w-[calc(100%-2.75rem)] gap-3 pt-1 text-sm leading-relaxed text-foreground'
                                 }
                             >
-                                {message.content}
-                            </p>
+                                <p className="whitespace-pre-wrap">
+                                    {message.content}
+                                </p>
+                                {message.activity && (
+                                    <Button asChild className="w-fit" size="sm">
+                                        <a
+                                            href={message.activity.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                        >
+                                            Abrir actividad
+                                            <ExternalLink />
+                                        </a>
+                                    </Button>
+                                )}
+                            </div>
                         </article>
                     ))
                 )}

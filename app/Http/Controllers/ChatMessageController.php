@@ -41,7 +41,7 @@ final class ChatMessageController extends Controller
         }
 
         return response()->json([
-            'message' => ['role' => 'assistant', 'content' => $reply],
+            'message' => $reply->toMessage(),
         ]);
     }
 
