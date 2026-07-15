@@ -4,13 +4,21 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ChatConversationController;
 use App\Http\Controllers\ChatMessageController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PublicActivityAnswerController;
 use App\Http\Controllers\PublicActivityController;
+use App\Http\Controllers\PublicActivityResultController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentSelectionController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'welcome')->name('home');
 Route::get('activities/{activity}', PublicActivityController::class)->name('activities.show');
+Route::post('activities/{activity}/answers', PublicActivityAnswerController::class)
+    ->middleware('throttle:60,1')
+    ->name('activities.answers.store');
+Route::post('activities/{activity}/result', PublicActivityResultController::class)
+    ->middleware('throttle:60,1')
+    ->name('activities.result.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
