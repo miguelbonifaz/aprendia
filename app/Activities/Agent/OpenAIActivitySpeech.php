@@ -20,7 +20,7 @@ final readonly class OpenAIActivitySpeech
         try {
             $response = Http::baseUrl((string) config('activity_agent.openai.base_url'))
                 ->withToken($apiKey)
-                ->accept('audio/mpeg')
+                ->accept((string) config('activity_agent.openai.speech_mime_type'))
                 ->asJson()
                 ->connectTimeout((int) config('activity_agent.openai.connect_timeout'))
                 ->timeout((int) config('activity_agent.openai.speech_timeout'))
@@ -28,7 +28,7 @@ final readonly class OpenAIActivitySpeech
                     'model' => config('activity_agent.openai.speech_model'),
                     'voice' => config('activity_agent.openai.speech_voice'),
                     'input' => $spokenWord,
-                    'response_format' => 'mp3',
+                    'response_format' => config('activity_agent.openai.speech_format'),
                     'speed' => config('activity_agent.openai.speech_speed'),
                 ]);
 

@@ -14,7 +14,9 @@ final class PublicActivityPronunciationController extends Controller
     {
         $model = (string) config('activity_agent.openai.speech_model');
         $voice = (string) config('activity_agent.openai.speech_voice');
-        $mediaId = 'pronunciation_'.substr(hash('sha256', "{$itemId}:{$model}:{$voice}"), 0, 24);
+        $format = (string) config('activity_agent.openai.speech_format');
+        $mimeType = (string) config('activity_agent.openai.speech_mime_type');
+        $mediaId = 'pronunciation_'.substr(hash('sha256', "{$itemId}:{$model}:{$voice}:{$format}"), 0, 24);
         $media = $activity->mediaAssets()->where('media_id', $mediaId)->first();
 
         if ($media === null) {
@@ -23,7 +25,7 @@ final class PublicActivityPronunciationController extends Controller
                 $content = $speech->generate($spokenWord);
                 $media = $activity->mediaAssets()->firstOrCreate(
                     ['media_id' => $mediaId],
-                    ['mime_type' => 'audio/mpeg', 'content' => base64_encode($content)],
+                    ['mime_type' => $mimeType, 'content' => base64_encode($content)],
                 );
             } catch (ActivityAgentUnavailable) {
                 return response('No pudimos generar el audio. Inténtalo nuevamente.', 503);
@@ -36,7 +38,7 @@ final class PublicActivityPronunciationController extends Controller
         return response($content, 200, [
             'Cache-Control' => 'public, max-age=31536000, immutable',
             'Content-Length' => (string) strlen($content),
-            'Content-Type' => 'audio/mpeg',
+            'Content-Type' => $media->mime_type,
         ]);
     }
 }

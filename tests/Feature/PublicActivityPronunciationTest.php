@@ -17,12 +17,14 @@ final class PublicActivityPronunciationTest extends TestCase
         config([
             'activity_agent.openai.api_key' => 'test-key',
             'activity_agent.openai.speech_voice' => 'cedar',
+            'activity_agent.openai.speech_format' => 'wav',
+            'activity_agent.openai.speech_mime_type' => 'audio/wav',
         ]);
         Http::preventStrayRequests();
         Http::fake(['api.openai.com/v1/audio/speech' => Http::response(
-            'mp3-content',
+            'wav-content',
             200,
-            ['Content-Type' => 'audio/mpeg'],
+            ['Content-Type' => 'audio/wav'],
         )]);
         $activity = Activity::factory()->create(['definition' => $this->definition()]);
         $activity->mediaAssets()->create([
@@ -37,9 +39,9 @@ final class PublicActivityPronunciationTest extends TestCase
 
         $this->get($route)
             ->assertOk()
-            ->assertHeader('Content-Type', 'audio/mpeg')
-            ->assertContent('mp3-content');
-        $this->get($route)->assertOk()->assertContent('mp3-content');
+            ->assertHeader('Content-Type', 'audio/wav')
+            ->assertContent('wav-content');
+        $this->get($route)->assertOk()->assertContent('wav-content');
 
         Http::assertSentCount(1);
         Http::assertSent(fn (Request $request): bool => $request['input'] === 'Muñeca');

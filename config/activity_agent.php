@@ -23,6 +23,8 @@ return [
         'speech_model' => 'gpt-4o-mini-tts',
         'speech_voice' => 'cedar',
         'speech_speed' => 1.0,
+        'speech_format' => 'wav',
+        'speech_mime_type' => 'audio/wav',
         'speech_timeout' => 30,
     ],
 ];
